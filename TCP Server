@@ -187,8 +187,8 @@ void execution(int client_internet_socket) {
             // Stap 3.3: Vergelijk het geraden getal met het te raden getal en geef een bericht uit
             if (guess_received == guess) {
                 printf("Client guessed the correct number: %d\n", guess_received);
-                send(client_internet_socket, "Correct guess!", 15, 0);
-                break; // Als het geraden getal correct is, stop de lus
+                send(client_internet_socket, "Correct guess! New number generated.", 36, 0);
+                guess = rand() % 1000000 + 1; // Genereer een nieuw willekeurig getal
             } else if (guess_received < guess) {
                 printf("Client guessed %d. Guess higher!\n", guess_received);
                 send(client_internet_socket, "Guess higher!", 14, 0);
