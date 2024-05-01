@@ -157,39 +157,48 @@ int connection(int internet_socket)
 }
 
 void execution(int client_internet_socket) {
-    // Stap 3.1: Laat de client weten welk bereik acceptabel is
-    const char *prompt = "Enter a number between 1 and 1000000: ";
-    send(client_internet_socket, prompt, strlen(prompt), 0);
+    srand(time(NULL)); // Initialiseer de pseudo-random number generator
+    int guess = rand() % 1000000 + 1; // Genereer een willekeurig getal tussen 1 en 1000000
 
-    // Stap 3.2: Ontvang het geraden getal van de client
-    char buffer[100];
-    int number_of_bytes_received = recv(client_internet_socket, buffer, sizeof(buffer), 0);
-    if (number_of_bytes_received == -1) {
-        perror("recv");
-    } else if (number_of_bytes_received == 0) {
-        printf("Client closed connection\n");
-    } else {
-        // Null-terminator toevoegen aan het ontvangen bericht
-        buffer[number_of_bytes_received] = '\0';
+    while (1) {
+        // Stap 3.1: Laat de client weten welk bereik acceptabel is
+        const char *prompt = "Enter a number between 1 and 1000000: ";
+        send(client_internet_socket, prompt, strlen(prompt), 0);
 
-        // Converteer het ontvangen bericht naar een integer
-        int guess_received = atoi(buffer);
-
-        // Controleren wat de server ontvangen heeft
-        printf("Received guess from client: %d\n", guess_received);
-        
-        // Stap 3.3: Vergelijk het geraden getal met het te raden getal en geef een bericht uit
-        int guess = rand() % 1000000 + 1; // Genereer een getal tussen 1 en 1000000
-        printf("Random number generated: %d\n", guess);
-        if (guess_received == guess) {
-            printf("Client guessed the correct number: %d\n", guess_received);
-            send(client_internet_socket, "Correct guess!", 15, 0);
+        // Stap 3.2: Ontvang het geraden getal van de client
+        char buffer[100];
+        int number_of_bytes_received = recv(client_internet_socket, buffer, sizeof(buffer), 0);
+        if (number_of_bytes_received == -1) {
+            perror("recv");
+            break;
+        } else if (number_of_bytes_received == 0) {
+            printf("Client closed connection\n");
+            break;
         } else {
-            printf("Client guessed incorrectly: %d\n", guess_received);
-            printf("The correct number was: %d\n", guess);
-            send(client_internet_socket, "Incorrect guess!", 17, 0);
+            // Null-terminator toevoegen aan het ontvangen bericht
+            buffer[number_of_bytes_received] = '\0';
+
+            // Converteer het ontvangen bericht naar een integer
+            int guess_received = atoi(buffer);
+
+            // Controleren wat de server ontvangen heeft
+            printf("Received guess from client: %d\n", guess_received);
+
+            // Stap 3.3: Vergelijk het geraden getal met het te raden getal en geef een bericht uit
+            if (guess_received == guess) {
+                printf("Client guessed the correct number: %d\n", guess_received);
+                send(client_internet_socket, "Correct guess!", 15, 0);
+                break; // Als het geraden getal correct is, stop de lus
+            } else if (guess_received < guess) {
+                printf("Client guessed %d. Guess higher!\n", guess_received);
+                send(client_internet_socket, "Guess higher!", 14, 0);
+            } else {
+                printf("Client guessed %d. Guess lower!\n", guess_received);
+                send(client_internet_socket, "Guess lower!", 13, 0);
+            }
         }
     }
+    // Nadat de lus is beëindigd, kunnen we hier verdere acties ondernemen indien nodig
 }
 
 
